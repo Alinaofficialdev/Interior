@@ -1,0 +1,17 @@
+{
+  "name": "aura-interior-management",
+  "version": "1.0.0",
+  "description": "Interior Management & Renovation System - Dubai, UAE",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "dev": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "seed": "cd backend && npm run seed"
+  },
+  "keywords": ["interior", "renovation", "dubai", "management"],
+  "author": "Aura Interiors Dubai",
+  "license": "PROPRIETARY"
+}

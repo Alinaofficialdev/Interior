@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Star, CheckCircle } from 'lucide-react';
 import { apiFetch } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import ImageUploadField from '../components/admin/ImageUploadField';
 
 export default function AdminProjects() {
+  const { isAdmin } = useAuth();
   const [projects, setProjects] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -157,9 +160,11 @@ export default function AdminProjects() {
                   <button onClick={() => handleOpenEdit(proj)} className="p-1.5 rounded bg-stone-100 hover:bg-stone-200 text-stone-700">
                     <Edit className="w-3.5 h-3.5" />
                   </button>
+                  {isAdmin && (
                   <button onClick={() => handleDelete(proj._id)} className="p-1.5 rounded bg-rose-100 hover:bg-rose-200 text-rose-700">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -221,36 +226,23 @@ export default function AdminProjects() {
                 </div>
               </div>
 
-              <div>
-                <label className="block font-bold text-stone-700 mb-1">Cover Image URL *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.coverImage}
-                  onChange={(e) => setFormData({ ...formData, coverImage: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-xl"
-                />
-              </div>
+              <ImageUploadField
+                label="Cover Image URL *"
+                value={formData.coverImage}
+                onChange={(url) => setFormData({ ...formData, coverImage: url })}
+              />
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">Before Image URL (Optional)</label>
-                  <input
-                    type="text"
-                    value={formData.beforeImage}
-                    onChange={(e) => setFormData({ ...formData, beforeImage: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-xl"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-stone-700 mb-1">After Image URL (Optional)</label>
-                  <input
-                    type="text"
-                    value={formData.afterImage}
-                    onChange={(e) => setFormData({ ...formData, afterImage: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-xl"
-                  />
-                </div>
+                <ImageUploadField
+                  label="Before Image URL (Optional)"
+                  value={formData.beforeImage}
+                  onChange={(url) => setFormData({ ...formData, beforeImage: url })}
+                />
+                <ImageUploadField
+                  label="After Image URL (Optional)"
+                  value={formData.afterImage}
+                  onChange={(url) => setFormData({ ...formData, afterImage: url })}
+                />
               </div>
 
               <div>

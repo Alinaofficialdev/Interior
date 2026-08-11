@@ -1,36 +1,19 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const reviewSchema = new mongoose.Schema({
-  customerName: {
-    type: String,
-    required: true,
-    trim: true
+const reviewSchema = new mongoose.Schema(
+  {
+    authorName: { type: String, required: true, trim: true },
+    authorTitle: { type: String, default: 'Client' },
+    rating: { type: Number, required: true, min: 1, max: 5 },
+    content: { type: String, required: true },
+    source: { type: String, enum: ['google', 'direct'], default: 'google' },
+    externalUrl: { type: String, default: '' },
+    isFeatured: { type: Boolean, default: false },
+    isPublished: { type: Boolean, default: true },
   },
-  rating: {
-    type: Number,
-    required: true,
-    min: 1,
-    max: 5
-  },
-  reviewText: {
-    type: String,
-    required: true
-  },
-  source: {
-    type: String,
-    default: 'Google Review'
-  },
-  externalUrl: String,
-  isFeatured: {
-    type: Boolean,
-    default: true
-  },
-  isPublished: {
-    type: Boolean,
-    default: true
-  }
-}, {
-  timestamps: true
-});
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('Review', reviewSchema);
+reviewSchema.index({ isPublished: 1, isFeatured: 1 });
+
+export const Review = mongoose.model('Review', reviewSchema);

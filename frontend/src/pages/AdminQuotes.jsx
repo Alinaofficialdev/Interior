@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Plus, Trash2, FileText, Printer, CheckCircle2 } from 'lucide-react';
+import { Plus, Trash2, FileText, Printer } from 'lucide-react';
 import { apiFetch } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function AdminQuotes() {
+  const { isAdmin } = useAuth();
   const [searchParams] = useSearchParams();
   const leadIdParam = searchParams.get('leadId') || '';
 
@@ -96,6 +98,17 @@ export default function AdminQuotes() {
         body: JSON.stringify({ status: newStatus })
       });
       if (res.success) fetchQuotesAndLeads();
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  const handleDeleteQuote = async (id) => {
+    if (!window.confirm('Delete this quotation permanently?')) return;
+    try {
+      await apiFetch(`/quotes/${id}`, { method: 'DELETE' });
+      if (selectedQuote?._id === id) setSelectedQuote(null);
+      fetchQuotesAndLeads();
     } catch (e) {
       alert(e.message);
     }
@@ -220,13 +233,22 @@ export default function AdminQuotes() {
                     <option value="Rejected">Rejected</option>
                   </select>
                 </td>
-                <td className="py-3.5 px-4 text-right">
+                <td className="py-3.5 px-4 text-right space-x-2">
                   <button
                     onClick={() => setSelectedQuote(q)}
                     className="text-xs font-bold text-[#C4795A] hover:underline"
                   >
-                    View BOQ Invoice
+                    View BOQ
                   </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => handleDeleteQuote(q._id)}
+                      className="p-1.5 rounded bg-rose-100 hover:bg-rose-200 text-rose-700 inline-flex align-middle"
+                      title="Delete quote"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

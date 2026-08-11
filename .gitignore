@@ -28,6 +28,7 @@ Thumbs.db
 
 # Uploads / temp
 backend/uploads/
+backend/.mongo-data/
 *.tmp
 
 # Coverage

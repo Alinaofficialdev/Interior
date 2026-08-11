@@ -1,12 +1,13 @@
-const express = require('express');
-const router = express.Router();
-const { getProjects, getProjectBySlug, createProject, updateProject, deleteProject } = require('../controllers/projectController');
-const { protect, authorize } = require('../middleware/authMiddleware');
+import { Router } from 'express';
+import * as project from '../controllers/projectController.js';
+import { protect, authorize, optionalProtect } from '../middleware/auth.js';
 
-router.get('/', getProjects);
-router.get('/:slug', getProjectBySlug);
-router.post('/', protect, authorize('admin', 'editor'), createProject);
-router.put('/:id', protect, authorize('admin', 'editor'), updateProject);
-router.delete('/:id', protect, authorize('admin', 'editor'), deleteProject);
+const router = Router();
 
-module.exports = router;
+router.get('/', optionalProtect, project.listProjects);
+router.get('/:slug', optionalProtect, project.getProjectBySlug);
+router.post('/', protect, project.createProject);
+router.put('/:id', protect, project.updateProject);
+router.delete('/:id', protect, authorize('admin'), project.deleteProject);
+
+export default router;

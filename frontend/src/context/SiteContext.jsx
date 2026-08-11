@@ -3,16 +3,25 @@ import { apiFetch } from '../services/api';
 
 const SiteContext = createContext();
 
+const emptySettings = {
+  companyName: '',
+  tagline: '',
+  phone: '',
+  whatsapp: '',
+  email: '',
+  address: '',
+  businessHours: '',
+  statistics: {},
+  seo: {},
+  socialMedia: {},
+  heroTrustBadges: [],
+  aboutBullets: [],
+  skills: [],
+};
+
 export const SiteProvider = ({ children }) => {
-  const [settings, setSettings] = useState({
-    companyName: 'Aura Luxury Interiors & Renovations Dubai',
-    tagline: 'Bespoke Fit-Out, Joinery & Architectural Renovation in Dubai',
-    phone: '+971 4 800 9988',
-    whatsapp: '+971501234567',
-    email: 'info@aurainteriors.ae',
-    address: 'Design District (D3), Building 4, Suite 302, Dubai, UAE',
-    statistics: { yearsExperience: 14, completedProjects: 350, teamMembers: 45, propertyInspections: 820, customerRating: 4.9 }
-  });
+  const [settings, setSettings] = useState(emptySettings);
+  const [loaded, setLoaded] = useState(false);
 
   const fetchSettings = async () => {
     try {
@@ -21,7 +30,9 @@ export const SiteProvider = ({ children }) => {
         setSettings(res.data);
       }
     } catch (e) {
-      // Use defaults
+      console.error('Failed to load site settings:', e);
+    } finally {
+      setLoaded(true);
     }
   };
 
@@ -30,7 +41,7 @@ export const SiteProvider = ({ children }) => {
   }, []);
 
   return (
-    <SiteContext.Provider value={{ settings, refreshSettings: fetchSettings }}>
+    <SiteContext.Provider value={{ settings, loaded, refreshSettings: fetchSettings }}>
       {children}
     </SiteContext.Provider>
   );

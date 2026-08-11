@@ -41,7 +41,7 @@ export default function ProjectDetail() {
   const hasBeforeAfter = project.beforeImages?.length > 0 && project.afterImages?.length > 0;
 
   return (
-    <div className="pt-24 pb-20">
+    <div className="page-offset pb-20">
       
       {/* Header */}
       <section className="bg-stone-900 text-white py-16">

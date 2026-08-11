@@ -38,7 +38,7 @@ export default function ServiceDetail() {
   }
 
   return (
-    <div className="pt-24 pb-20">
+    <div className="page-offset pb-20">
       
       {/* Hero */}
       <section className="relative h-[60vh] flex items-center justify-center bg-stone-900 text-white overflow-hidden">

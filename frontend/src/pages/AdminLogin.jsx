@@ -62,7 +62,7 @@ export default function AdminLogin() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@interior.ae"
+                placeholder="admin@interior.com"
                 className="w-full pl-10 pr-4 py-3 bg-stone-900 border border-stone-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C4795A] text-xs text-white"
               />
             </div>
@@ -96,7 +96,7 @@ export default function AdminLogin() {
         </form>
 
         <div className="pt-4 border-t border-stone-900 text-center text-[11px] text-stone-500">
-          Default Credentials: <code className="text-stone-300">admin@interior.ae</code> / <code className="text-stone-300">Admin@2026!</code>
+          Default Credentials: <code className="text-stone-300">admin@interior.com</code> / <code className="text-stone-300">Admin@123</code>
         </div>
 
       </div>

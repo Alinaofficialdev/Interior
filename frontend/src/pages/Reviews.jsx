@@ -27,7 +27,7 @@ export default function Reviews() {
   }, []);
 
   return (
-    <div className="pt-24 pb-20">
+    <div className="page-offset pb-20">
       
       <section className="bg-stone-900 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">

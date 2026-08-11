@@ -1,105 +1,75 @@
-const User = require('../models/User');
+import { User } from '../models/User.js';
+import { ApiError } from '../utils/ApiError.js';
+import { ApiResponse } from '../utils/ApiResponse.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
-// @desc    Get All Users
-// @route   GET /api/v1/users
-// @access  Private (Admin Only)
-exports.getUsers = async (req, res, next) => {
-  try {
-    const users = await User.find().select('-password').sort({ createdAt: -1 });
-    res.status(200).json({ success: true, data: users });
-  } catch (error) {
-    next(error);
+function formatUser(user) {
+  const obj = user.toObject ? user.toObject() : { ...user };
+  delete obj.password;
+  delete obj.refreshToken;
+  return {
+    ...obj,
+    status: obj.isActive ? 'active' : 'inactive',
+  };
+}
+
+export const listUsers = asyncHandler(async (req, res) => {
+  const users = await User.find().select('-password -refreshToken').sort({ createdAt: -1 });
+  res.status(200).json(new ApiResponse(200, users.map(formatUser)));
+});
+
+export const createUser = asyncHandler(async (req, res) => {
+  const { name, email, password, role, isActive, status } = req.body;
+
+  if (!name || !email || !password) {
+    throw new ApiError(400, 'Name, email, and password are required');
   }
-};
-
-// @desc    Create User Account (Admin / Editor)
-// @route   POST /api/v1/users
-// @access  Private (Admin Only)
-exports.createUser = async (req, res, next) => {
-  try {
-    const { name, email, password, role, status } = req.body;
-
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: 'User with this email already exists' });
-    }
-
-    const user = await User.create({
-      name,
-      email: email.toLowerCase(),
-      password,
-      role: role || 'editor',
-      status: status || 'active'
-    });
-
-    res.status(201).json({
-      success: true,
-      message: 'User account created successfully',
-      data: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        status: user.status
-      }
-    });
-  } catch (error) {
-    next(error);
+  if (password.length < 8) {
+    throw new ApiError(400, 'Password must be at least 8 characters');
   }
-};
 
-// @desc    Update User Account
-// @route   PUT /api/v1/users/:id
-// @access  Private (Admin Only)
-exports.updateUser = async (req, res, next) => {
-  try {
-    const { name, email, role, status, password } = req.body;
-    const user = await User.findById(req.params.id);
+  const exists = await User.findOne({ email: email.toLowerCase() });
+  if (exists) throw new ApiError(400, 'User with this email already exists');
 
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
+  const active = status ? status === 'active' : isActive !== false;
 
-    if (name) user.name = name;
-    if (email) user.email = email.toLowerCase();
-    if (role) user.role = role;
-    if (status) user.status = status;
-    if (password) user.password = password;
+  const user = await User.create({
+    name,
+    email: email.toLowerCase(),
+    password,
+    role: role || 'editor',
+    isActive: active,
+  });
 
-    await user.save();
+  res.status(201).json(new ApiResponse(201, formatUser(user), 'User created'));
+});
 
-    res.status(200).json({
-      success: true,
-      message: 'User updated successfully',
-      data: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        status: user.status
-      }
-    });
-  } catch (error) {
-    next(error);
+export const updateUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id).select('+password');
+  if (!user) throw new ApiError(404, 'User not found');
+
+  const { name, email, role, password, isActive, status } = req.body;
+
+  if (name) user.name = name;
+  if (email) user.email = email.toLowerCase();
+  if (role) user.role = role;
+  if (status !== undefined) user.isActive = status === 'active';
+  else if (isActive !== undefined) user.isActive = isActive;
+  if (password) {
+    if (password.length < 8) throw new ApiError(400, 'Password must be at least 8 characters');
+    user.password = password;
   }
-};
 
-// @desc    Delete User Account
-// @route   DELETE /api/v1/users/:id
-// @access  Private (Admin Only)
-exports.deleteUser = async (req, res, next) => {
-  try {
-    if (req.params.id === req.user._id.toString()) {
-      return res.status(400).json({ success: false, message: 'You cannot delete your own admin account' });
-    }
+  await user.save();
+  res.status(200).json(new ApiResponse(200, formatUser(user), 'User updated'));
+});
 
-    const user = await User.findByIdAndDelete(req.params.id);
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-
-    res.status(200).json({ success: true, message: 'User account deleted successfully' });
-  } catch (error) {
-    next(error);
+export const deleteUser = asyncHandler(async (req, res) => {
+  if (req.params.id === req.user._id.toString()) {
+    throw new ApiError(400, 'You cannot delete your own account');
   }
-};
+
+  const user = await User.findByIdAndDelete(req.params.id);
+  if (!user) throw new ApiError(404, 'User not found');
+  res.status(200).json(new ApiResponse(200, null, 'User deleted'));
+});

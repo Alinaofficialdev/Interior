@@ -26,7 +26,7 @@ export default function StyleDetail() {
   if (!style) return <div className="pt-32 text-center py-20 font-serif text-xl">Style Not Found</div>;
 
   return (
-    <div className="pt-24 pb-20">
+    <div className="page-offset pb-20">
       <section className="relative h-[55vh] flex items-center justify-center bg-stone-900 text-white overflow-hidden">
         <img src={style.image} alt={style.name} className="absolute inset-0 w-full h-full object-cover opacity-40" />
         <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent" />

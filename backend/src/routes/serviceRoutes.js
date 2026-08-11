@@ -1,12 +1,14 @@
-const express = require('express');
-const router = express.Router();
-const { getServices, getServiceBySlug, createService, updateService, deleteService } = require('../controllers/serviceController');
-const { protect, authorize } = require('../middleware/authMiddleware');
+import { Router } from 'express';
+import * as service from '../controllers/serviceController.js';
+import { protect, authorize, optionalProtect } from '../middleware/auth.js';
 
-router.get('/', getServices);
-router.get('/:slug', getServiceBySlug);
-router.post('/', protect, authorize('admin', 'editor'), createService);
-router.put('/:id', protect, authorize('admin', 'editor'), updateService);
-router.delete('/:id', protect, authorize('admin', 'editor'), deleteService);
+const router = Router();
 
-module.exports = router;
+router.get('/', optionalProtect, service.listServices);
+router.get('/:slug', service.getServiceBySlug);
+router.post('/', protect, service.createService);
+router.put('/:id', protect, service.updateService);
+router.delete('/:id', protect, authorize('admin'), service.deleteService);
+router.patch('/reorder', protect, service.reorderServices);
+
+export default router;

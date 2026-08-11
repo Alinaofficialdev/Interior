@@ -13,8 +13,8 @@ export default function Consultation() {
     email: '',
     phone: '',
     propertyType: 'Villa',
-    service: initialService || 'Villa Renovation',
-    location: 'Palm Jumeirah',
+    service: initialService || '',
+    location: '',
     message: '',
     preferredContactMethod: 'WhatsApp'
   });
@@ -58,6 +58,7 @@ export default function Consultation() {
         body: JSON.stringify({
           ...formData,
           source: 'Consultation Booking Page',
+          leadType: 'consultation',
           utmSource: searchParams.get('utm_source') || '',
           utmMedium: searchParams.get('utm_medium') || '',
           utmCampaign: searchParams.get('utm_campaign') || ''
@@ -75,7 +76,7 @@ export default function Consultation() {
   };
 
   return (
-    <div className="pt-24 pb-20">
+    <div className="page-offset pb-20">
       
       <section className="bg-stone-900 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
@@ -199,13 +200,7 @@ export default function Consultation() {
                         <option key={s._id} value={s.name}>{s.name}</option>
                       ))
                     ) : (
-                      <>
-                        <option value="Villa Renovation">Villa Renovation</option>
-                        <option value="Full Home Renovation">Full Home Renovation</option>
-                        <option value="Kitchen Renovation">Kitchen Renovation</option>
-                        <option value="Bespoke Joinery">Bespoke Joinery</option>
-                        <option value="Property Inspection">Property Inspection</option>
-                      </>
+                      <option value="">Loading services…</option>
                     )}
                   </select>
                 </div>

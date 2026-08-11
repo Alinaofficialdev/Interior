@@ -1,31 +1,18 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const designStyleSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true,
-    unique: true
+const designStyleSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    slug: { type: String, required: true, unique: true, lowercase: true },
+    tagline: { type: String, default: '' },
+    description: { type: String, default: '' },
+    image: { type: String, default: '' },
+    traits: [{ type: String }],
+    relatedProjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }],
+    order: { type: Number, default: 0 },
+    isActive: { type: Boolean, default: true },
   },
-  slug: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true
-  },
-  description: {
-    type: String,
-    required: true
-  },
-  image: {
-    type: String,
-    required: true
-  },
-  characteristics: [{
-    type: String
-  }]
-}, {
-  timestamps: true
-});
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('DesignStyle', designStyleSchema);
+export const DesignStyle = mongoose.model('DesignStyle', designStyleSchema);

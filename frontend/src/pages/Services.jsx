@@ -31,7 +31,7 @@ export default function Services() {
     : services.filter(s => s.category === selectedCategory);
 
   return (
-    <div className="pt-24 pb-20">
+    <div className="page-offset pb-20">
       
       {/* Header */}
       <section className="bg-gradient-to-r from-stone-900 to-[#1A1817] text-white py-20">

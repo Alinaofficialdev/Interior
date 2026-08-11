@@ -1,49 +1,60 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const siteSettingSchema = new mongoose.Schema({
-  companyName: {
-    type: String,
-    default: 'Aura Luxury Interiors & Renovations Dubai'
+const siteSettingSchema = new mongoose.Schema(
+  {
+    companyName: { type: String, default: 'Interior Platform' },
+    tagline: { type: String, default: "Dubai's Trusted Fit-Out & Renovation Specialists" },
+    phone: { type: String, default: '+971 55 000 0000' },
+    whatsapp: { type: String, default: '971550000000' },
+    email: { type: String, default: 'hello@interior.com' },
+    address: { type: String, default: 'Al Quoz, Dubai, UAE' },
+    businessHours: { type: String, default: 'Mon - Sat: 8:00 AM - 7:00 PM' },
+    mapEmbedUrl: { type: String, default: '' },
+    socialLinks: {
+      facebook: { type: String, default: '' },
+      instagram: { type: String, default: '' },
+      linkedin: { type: String, default: '' },
+      youtube: { type: String, default: '' },
+    },
+    stats: {
+      yearsExperience: { type: Number, default: 25 },
+      projectsCompleted: { type: Number, default: 1200 },
+      employees: { type: Number, default: 200 },
+      inspections: { type: Number, default: 10000 },
+      averageRating: { type: Number, default: 4.9 },
+    },
+    seo: {
+      defaultTitle: { type: String, default: 'Interior Platform | Fit-Out & Renovation Dubai' },
+      defaultDescription: {
+        type: String,
+        default: 'Turnkey interior fit-out, joinery, and property renovation in Dubai.',
+      },
+      ogImage: { type: String, default: '' },
+    },
+    heroVideo: { type: String, default: '' },
+    heroImage: { type: String, default: '' },
+    heroBadge: { type: String, default: '' },
+    heroTitle: { type: String, default: '' },
+    heroSubtitle: { type: String, default: '' },
+    heroDescription: { type: String, default: '' },
+    heroTrustBadges: [{ type: String }],
+    aboutTitle: { type: String, default: '' },
+    aboutSubtitle: { type: String, default: '' },
+    aboutBody: { type: String, default: '' },
+    aboutBullets: [{ type: String }],
+    aboutImage: { type: String, default: '' },
+    mission: { type: String, default: '' },
+    vision: { type: String, default: '' },
+    skillsTitle: { type: String, default: '' },
+    skillsBody: { type: String, default: '' },
+    skills: [{ label: { type: String }, value: { type: Number, default: 0 } }],
+    ctaBandTitle: { type: String, default: '' },
+    ctaBandBody: { type: String, default: '' },
+    ctaBandImage: { type: String, default: '' },
+    finalCtaTitle: { type: String, default: '' },
+    finalCtaBody: { type: String, default: '' },
   },
-  tagline: {
-    type: String,
-    default: 'Bespoke Fit-Out, Joinery & Architectural Renovation in Dubai'
-  },
-  phone: {
-    type: String,
-    default: '+971 4 800 9988'
-  },
-  whatsapp: {
-    type: String,
-    default: '+971501234567'
-  },
-  email: {
-    type: String,
-    default: 'info@aurainteriors.ae'
-  },
-  address: {
-    type: String,
-    default: 'Design District (D3), Building 4, Suite 302, Dubai, United Arab Emirates'
-  },
-  socialMedia: {
-    instagram: { type: String, default: 'https://instagram.com' },
-    facebook: { type: String, default: 'https://facebook.com' },
-    linkedin: { type: String, default: 'https://linkedin.com' },
-    pinterest: { type: String, default: 'https://pinterest.com' }
-  },
-  statistics: {
-    yearsExperience: { type: Number, default: 14 },
-    completedProjects: { type: Number, default: 350 },
-    teamMembers: { type: Number, default: 45 },
-    propertyInspections: { type: Number, default: 820 },
-    customerRating: { type: Number, default: 4.9 }
-  },
-  seoDefaults: {
-    metaTitle: { type: String, default: 'Luxury Interior Design & Renovation Contractors in Dubai' },
-    metaDescription: { type: String, default: 'Premier interior fit-out, custom joinery, villa renovation, and property inspection services across Dubai, UAE.' }
-  }
-}, {
-  timestamps: true
-});
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('SiteSetting', siteSettingSchema);
+export const SiteSetting = mongoose.model('SiteSetting', siteSettingSchema);

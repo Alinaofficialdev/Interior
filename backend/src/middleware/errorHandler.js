@@ -1,26 +1,21 @@
-const errorHandler = (err, req, res, next) => {
-  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-  let message = err.message || 'Internal Server Error';
+import { ApiError } from '../utils/ApiError.js';
 
-  // Mongoose duplicate key
-  if (err.code === 11000) {
-    statusCode = 400;
-    const field = Object.keys(err.keyValue || {})[0] || 'field';
-    message = `Duplicate value entered for ${field}. Please use another value.`;
-  }
+export function notFound(req, res, next) {
+  next(new ApiError(404, `Route not found: ${req.method} ${req.originalUrl}`));
+}
 
-  // Mongoose validation error
-  if (err.name === 'ValidationError') {
-    statusCode = 400;
-    message = Object.values(err.errors).map(val => val.message).join(', ');
+export function errorHandler(err, req, res, next) {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || 'Internal server error';
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.error(err);
   }
 
   res.status(statusCode).json({
     success: false,
-    message: message,
-    data: null,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    message,
+    errors: err.errors || [],
+    ...(process.env.NODE_ENV !== 'production' && { stack: err.stack }),
   });
-};
-
-module.exports = errorHandler;
+}

@@ -1,14 +1,22 @@
-const express = require('express');
-const router = express.Router();
-const { createLead, getLeads, getLeadById, updateLead, addLeadNote, deleteLead } = require('../controllers/leadController');
-const { protect, authorize } = require('../middleware/authMiddleware');
-const { leadSubmissionLimiter } = require('../middleware/rateLimiter');
+import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
+import * as lead from '../controllers/leadController.js';
+import { protect, authorize } from '../middleware/auth.js';
 
-router.post('/', leadSubmissionLimiter, createLead);
-router.get('/', protect, authorize('admin', 'editor'), getLeads);
-router.get('/:id', protect, authorize('admin', 'editor'), getLeadById);
-router.put('/:id', protect, authorize('admin', 'editor'), updateLead);
-router.post('/:id/notes', protect, authorize('admin', 'editor'), addLeadNote);
-router.delete('/:id', protect, authorize('admin'), deleteLead);
+const router = Router();
 
-module.exports = router;
+const leadLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { success: false, message: 'Too many submissions. Try again later.' },
+});
+
+router.post('/', leadLimiter, lead.createLead);
+router.get('/', protect, lead.listLeads);
+router.get('/:id', protect, lead.getLead);
+router.patch('/:id', protect, lead.updateLead);
+router.put('/:id', protect, lead.updateLead);
+router.post('/:id/notes', protect, lead.addLeadNote);
+router.delete('/:id', protect, authorize('admin'), lead.deleteLead);
+
+export default router;

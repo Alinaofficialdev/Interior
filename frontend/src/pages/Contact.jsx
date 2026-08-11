@@ -31,7 +31,9 @@ export default function Contact() {
           phone: formData.phone,
           message: formData.message,
           service: 'General Contact Inquiry',
-          source: 'Contact Page Form'
+          source: 'Contact Page Form',
+          leadType: 'contact',
+          propertyType: 'other',
         })
       });
 
@@ -47,7 +49,7 @@ export default function Contact() {
   };
 
   return (
-    <div className="pt-24 pb-20">
+    <div className="page-offset pb-20">
       
       <section className="bg-stone-900 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
@@ -96,8 +98,9 @@ export default function Contact() {
                 </div>
               </a>
 
+              {settings.whatsapp && (
               <a
-                href={`https://wa.me/${settings.whatsapp ? settings.whatsapp.replace(/\+/g, '') : '971501234567'}?text=Hello%20Aura%20Interiors`}
+                href={`https://wa.me/${settings.whatsapp.replace(/\+/g, '')}?text=Hello`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center space-x-4 p-5 rounded-xl bg-emerald-950/10 border border-emerald-500/30 hover:bg-emerald-950/20 transition"
@@ -108,6 +111,7 @@ export default function Contact() {
                   <p className="text-stone-600 text-sm mt-1">Chat directly with senior project management</p>
                 </div>
               </a>
+              )}
             </div>
           </div>
 
@@ -198,16 +202,17 @@ export default function Contact() {
 
         </div>
 
-        {/* Map Preview */}
+        {settings.mapEmbedUrl && (
         <div className="mt-16 rounded-2xl overflow-hidden shadow-lg border border-stone-200 bg-stone-200 h-80">
           <iframe
-            title="Aura Interiors Dubai Office Location"
-            src="https://www.google.com/maps?q=Design%20District%20D3%20Dubai%20UAE&z=14&output=embed"
+            title="Office Location"
+            src={settings.mapEmbedUrl}
             className="w-full h-full"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           />
         </div>
+        )}
       </section>
 
     </div>

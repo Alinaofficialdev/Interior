@@ -1,139 +1,96 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+import jwt from 'jsonwebtoken';
+import { env } from '../config/env.js';
+import { User } from '../models/User.js';
+import { ApiError } from '../utils/ApiError.js';
+import { ApiResponse } from '../utils/ApiResponse.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
-const generateAccessToken = (userId) => {
-  return jwt.sign(
-    { id: userId },
-    process.env.JWT_SECRET || 'super_secret_jwt_access_key_dubai_interior_2026',
-    { expiresIn: process.env.JWT_EXPIRES_IN || '15m' }
-  );
-};
-
-const generateRefreshToken = (userId) => {
-  return jwt.sign(
-    { id: userId },
-    process.env.JWT_REFRESH_SECRET || 'super_secret_jwt_refresh_key_dubai_interior_2026',
-    { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }
-  );
-};
-
-// @desc    Admin / Editor Login
-// @route   POST /api/v1/auth/login
-// @access  Public
-exports.login = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'Please provide email and password' });
-    }
-
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
-
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
-
-    if (user.status !== 'active') {
-      return res.status(403).json({ success: false, message: 'Your account is deactivated' });
-    }
-
-    user.lastLogin = new Date();
-    await user.save();
-
-    const accessToken = generateAccessToken(user._id);
-    const refreshToken = generateRefreshToken(user._id);
-
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
-
-    res.status(200).json({
-      success: true,
-      message: 'Logged in successfully',
-      data: {
-        user: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        },
-        token: accessToken
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// @desc    Refresh Access Token
-// @route   POST /api/v1/auth/refresh
-// @access  Public (via HTTP-Only Cookie)
-exports.refreshToken = async (req, res, next) => {
-  try {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) {
-      return res.status(401).json({ success: false, message: 'No refresh token provided' });
-    }
-
-    const decoded = jwt.verify(
-      refreshToken,
-      process.env.JWT_REFRESH_SECRET || 'super_secret_jwt_refresh_key_dubai_interior_2026'
-    );
-
-    const user = await User.findById(decoded.id).select('-password');
-    if (!user || user.status !== 'active') {
-      return res.status(401).json({ success: false, message: 'Invalid user or account deactivated' });
-    }
-
-    const newAccessToken = generateAccessToken(user._id);
-
-    res.status(200).json({
-      success: true,
-      message: 'Token refreshed',
-      data: {
-        user: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        },
-        token: newAccessToken
-      }
-    });
-  } catch (error) {
-    return res.status(401).json({ success: false, message: 'Invalid refresh token' });
-  }
-};
-
-// @desc    Get Current User Profile
-// @route   GET /api/v1/auth/me
-// @access  Private
-exports.getMe = async (req, res, next) => {
-  try {
-    res.status(200).json({
-      success: true,
-      data: req.user
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// @desc    Logout User / Clear Cookie
-// @route   POST /api/v1/auth/logout
-// @access  Public
-exports.logout = (req, res) => {
-  res.clearCookie('refreshToken');
-  res.status(200).json({
-    success: true,
-    message: 'Logged out successfully'
+function signAccessToken(user) {
+  return jwt.sign({ id: user._id, role: user.role }, env.jwtAccessSecret, {
+    expiresIn: env.jwtAccessExpires,
   });
-};
+}
+
+function signRefreshToken(user) {
+  return jwt.sign({ id: user._id }, env.jwtRefreshSecret, {
+    expiresIn: env.jwtRefreshExpires,
+  });
+}
+
+function setRefreshCookie(res, token) {
+  res.cookie('refreshToken', token, {
+    httpOnly: true,
+    secure: env.nodeEnv === 'production',
+    sameSite: env.nodeEnv === 'production' ? 'strict' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+}
+
+export const login = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) throw new ApiError(400, 'Email and password are required');
+
+  const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+  if (!user || !(await user.comparePassword(password))) {
+    throw new ApiError(401, 'Invalid email or password');
+  }
+  if (!user.isActive) throw new ApiError(403, 'Account is inactive');
+
+  const accessToken = signAccessToken(user);
+  const refreshToken = signRefreshToken(user);
+  user.refreshToken = refreshToken;
+  await user.save({ validateBeforeSave: false });
+  setRefreshCookie(res, refreshToken);
+
+  res.status(200).json(
+    new ApiResponse(200, {
+      accessToken,
+      token: accessToken,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+    }, 'Login successful')
+  );
+});
+
+export const refresh = asyncHandler(async (req, res) => {
+  const token = req.cookies?.refreshToken;
+  if (!token) throw new ApiError(401, 'Refresh token missing');
+
+  let decoded;
+  try {
+    decoded = jwt.verify(token, env.jwtRefreshSecret);
+  } catch {
+    throw new ApiError(401, 'Invalid refresh token');
+  }
+
+  const user = await User.findById(decoded.id).select('+refreshToken');
+  if (!user || user.refreshToken !== token) {
+    throw new ApiError(401, 'Invalid refresh token');
+  }
+
+  const accessToken = signAccessToken(user);
+  const refreshToken = signRefreshToken(user);
+  user.refreshToken = refreshToken;
+  await user.save({ validateBeforeSave: false });
+  setRefreshCookie(res, refreshToken);
+
+  res.status(200).json(new ApiResponse(200, { accessToken, token: accessToken }, 'Token refreshed'));
+});
+
+export const logout = asyncHandler(async (req, res) => {
+  if (req.user) {
+    await User.findByIdAndUpdate(req.user._id, { refreshToken: null });
+  }
+  res.clearCookie('refreshToken');
+  res.status(200).json(new ApiResponse(200, null, 'Logged out'));
+});
+
+export const me = asyncHandler(async (req, res) => {
+  res.status(200).json(
+    new ApiResponse(200, {
+      id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      role: req.user.role,
+    })
+  );
+});

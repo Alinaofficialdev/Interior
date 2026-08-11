@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { apiFetch } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import ImageUploadField from '../components/admin/ImageUploadField';
 
 export default function AdminServices() {
+  const { isAdmin } = useAuth();
   const [services, setServices] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -13,7 +16,8 @@ export default function AdminServices() {
     shortDescription: '',
     description: '',
     heroImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
-    isActive: true
+    isActive: true,
+    isFeatured: false,
   });
 
   const fetchServices = async () => {
@@ -50,7 +54,8 @@ export default function AdminServices() {
       shortDescription: serv.shortDescription,
       description: serv.description,
       heroImage: serv.heroImage,
-      isActive: serv.isActive
+      isActive: serv.isActive,
+      isFeatured: serv.isFeatured || false,
     });
     setShowModal(true);
   };
@@ -131,9 +136,11 @@ export default function AdminServices() {
                   <button onClick={() => handleOpenEdit(serv)} className="p-1.5 rounded bg-stone-100 hover:bg-stone-200 text-stone-700">
                     <Edit className="w-3.5 h-3.5" />
                   </button>
+                  {isAdmin && (
                   <button onClick={() => handleDelete(serv._id)} className="p-1.5 rounded bg-rose-100 hover:bg-rose-200 text-rose-700">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -187,14 +194,14 @@ export default function AdminServices() {
                   className="w-full px-3 py-2 border rounded-xl"
                 />
               </div>
-              <div>
-                <label className="block font-bold text-stone-700 mb-1">Hero Image URL</label>
-                <input
-                  type="text"
-                  value={formData.heroImage}
-                  onChange={(e) => setFormData({ ...formData, heroImage: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-xl"
-                />
+              <ImageUploadField
+                label="Hero Image URL"
+                value={formData.heroImage}
+                onChange={(url) => setFormData({ ...formData, heroImage: url })}
+              />
+              <div className="flex items-center space-x-2">
+                <input type="checkbox" id="isFeatured" checked={formData.isFeatured} onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })} />
+                <label htmlFor="isFeatured" className="font-bold text-stone-700">Featured on Homepage</label>
               </div>
               <div className="flex items-center space-x-2">
                 <input

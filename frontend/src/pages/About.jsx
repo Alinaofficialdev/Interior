@@ -7,7 +7,7 @@ export default function About() {
   const stats = settings.statistics || { yearsExperience: 14, completedProjects: 350, teamMembers: 45, propertyInspections: 820 };
 
   return (
-    <div className="pt-24 pb-20">
+    <div className="page-offset pb-20">
       
       {/* Header */}
       <section className="bg-stone-900 text-white py-20">

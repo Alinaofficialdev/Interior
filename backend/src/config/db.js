@@ -1,21 +1,8 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
+import { env } from './env.js';
 
-let isConnected = false;
-let isMockMode = false;
-
-const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 10000,
-    });
-    isConnected = true;
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.warn(`MongoDB Connection Warning: ${error.message}. Switching to Memory DB Mode.`);
-    isMockMode = true;
-  }
-};
-
-const getStatus = () => ({ isConnected, isMockMode });
-
-module.exports = { connectDB, getStatus };
+export async function connectDB() {
+  mongoose.set('strictQuery', true);
+  await mongoose.connect(env.mongoUri);
+  console.log(`MongoDB connected: ${env.mongoUri}`);
+}

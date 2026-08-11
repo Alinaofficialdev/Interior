@@ -1,18 +1,15 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const mediaSchema = new mongoose.Schema({
-  fileName: { type: String, required: true },
-  url: { type: String, required: true },
-  publicId: String,
-  type: { type: String, enum: ['image', 'video'], default: 'image' },
-  mimeType: String,
-  size: Number,
-  width: Number,
-  height: Number,
-  altText: String,
-  uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
-}, {
-  timestamps: true
-});
+const mediaSchema = new mongoose.Schema(
+  {
+    type: { type: String, enum: ['video', 'image'], default: 'image' },
+    title: { type: String, default: '' },
+    url: { type: String, required: true },
+    thumbnail: { type: String, default: '' },
+    placement: { type: String, enum: ['home', 'about', 'global'], default: 'global' },
+    order: { type: Number, default: 0 },
+  },
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('Media', mediaSchema);
+export const Media = mongoose.model('Media', mediaSchema);

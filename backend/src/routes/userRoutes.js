@@ -1,14 +1,14 @@
-const express = require('express');
-const router = express.Router();
-const { getUsers, createUser, updateUser, deleteUser } = require('../controllers/userController');
-const { protect, authorize } = require('../middleware/authMiddleware');
+import { Router } from 'express';
+import * as user from '../controllers/userController.js';
+import { protect, authorize } from '../middleware/auth.js';
 
-router.use(protect);
-router.use(authorize('admin')); // BR-004: Only administrators may manage users
+const router = Router();
 
-router.get('/', getUsers);
-router.post('/', createUser);
-router.put('/:id', updateUser);
-router.delete('/:id', deleteUser);
+router.use(protect, authorize('admin'));
 
-module.exports = router;
+router.get('/', user.listUsers);
+router.post('/', user.createUser);
+router.put('/:id', user.updateUser);
+router.delete('/:id', user.deleteUser);
+
+export default router;

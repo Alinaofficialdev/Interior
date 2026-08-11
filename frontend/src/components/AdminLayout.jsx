@@ -1,15 +1,24 @@
 import React from 'react';
 import { Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { 
-  LayoutDashboard, Users, FileText, Layers, FolderKanban, Star, 
-  Handshake, Palette, Settings, LogOut, ArrowLeft, Image as ImageIcon 
+  LayoutDashboard, Users, FileText, Layers, FolderKanban,
+  Settings, LogOut, ArrowLeft, Star, Handshake, Palette, Shield,
+  ShieldCheck, Briefcase, ClipboardList, Compass,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function AdminLayout() {
-  const { user, logout } = useAuth();
+  const { user, loading, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-stone-100 flex items-center justify-center text-stone-500 text-sm">
+        Loading admin portal...
+      </div>
+    );
+  }
 
   if (!user) {
     navigate('/admin/login');
@@ -22,19 +31,23 @@ export default function AdminLayout() {
   };
 
   const navItems = [
-    { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
+    { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Leads & Inquiries', path: '/admin/leads', icon: Users },
+    { name: 'Job Openings', path: '/admin/job-openings', icon: Briefcase },
+    { name: 'Job Applications', path: '/admin/applications', icon: ClipboardList },
     { name: 'Quotations', path: '/admin/quotes', icon: FileText },
     { name: 'Services', path: '/admin/services', icon: Layers },
     { name: 'Projects', path: '/admin/projects', icon: FolderKanban },
     { name: 'Design Styles', path: '/admin/design-styles', icon: Palette },
+    { name: 'Trust Pillars', path: '/admin/trust-pillars', icon: ShieldCheck },
     { name: 'Reviews', path: '/admin/reviews', icon: Star },
     { name: 'Partners', path: '/admin/partners', icon: Handshake },
-    { name: 'Site Settings', path: '/admin/settings', icon: Settings },
+    { name: 'Navigation', path: '/admin/navigation', icon: Compass },
   ];
 
-  if (user.role === 'admin') {
-    navItems.push({ name: 'User Management', path: '/admin/users', icon: Users });
+  if (isAdmin) {
+    navItems.push({ name: 'Site Settings', path: '/admin/settings', icon: Settings });
+    navItems.push({ name: 'User Management', path: '/admin/users', icon: Shield });
   }
 
   return (
@@ -71,7 +84,7 @@ export default function AdminLayout() {
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path;
+            const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
             return (
               <Link
                 key={item.name}
